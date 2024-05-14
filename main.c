@@ -1,9 +1,11 @@
-#include "cpu/cpu.h"
 
+#include <stdio.h>
 
+int void main(){
 
-
-int main(int argc, char** argv){
-
+    int i;
+    for (i=0; i<10; i++){
+        printf("suca %d",i);
+    }
 
 }

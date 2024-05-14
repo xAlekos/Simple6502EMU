@@ -51,10 +51,10 @@ void clock(cpu* ctx){
 
         ctx->remaining_cycles = instrunctions_table[ctx->cur_opcode].cycles;
 
-        uint8_t another_cycle = (instrunctions_table[ctx->cur_opcode].addr_mode());
-        uint8_t another_cycle_again = (instrunctions_table[ctx->cur_opcode].op());
+        uint8_t another_cycle_1 = (instrunctions_table[ctx->cur_opcode].addr_mode());
+        uint8_t another_cycle_2 = (instrunctions_table[ctx->cur_opcode].op());
 
-        ctx->remaining_cycles += (another_cycle & another_cycle_again);
+        ctx->remaining_cycles += (another_cycle_1 & another_cycle_2);
 
     }
 
@@ -87,7 +87,7 @@ uint8_t ZP0(cpu *ctx){
 
 uint8_t ZPX(cpu *ctx){
 
-    ctx->operand_addr = cpu_read_byte(ctx,ctx->pc + ctx->x);
+    ctx->operand_addr = cpu_read_byte(ctx,ctx->pc) + ctx->x;
     ctx->pc++;
     ctx->operand_addr &= 0x00FF;
     return 0;
@@ -95,7 +95,7 @@ uint8_t ZPX(cpu *ctx){
 
 uint8_t ZPY(cpu *ctx){
     
-    ctx->operand_addr = cpu_read_byte(ctx,ctx->pc + ctx->y);
+    ctx->operand_addr = cpu_read_byte(ctx,ctx->pc) + ctx->y;
     ctx->pc++;
     ctx->operand_addr &= 0x00FF;
     return 0;
@@ -151,6 +151,7 @@ uint8_t ABY(cpu *ctx){
 
 uint8_t IND(cpu *ctx){
 
+    uint8_t wrap = 0;
     uint16_t point_to;
 
     uint8_t lo = cpu_read_byte(ctx,ctx->pc);
@@ -159,10 +160,17 @@ uint8_t IND(cpu *ctx){
     uint8_t hi = cpu_read_byte(ctx,ctx->pc);
     ctx->pc++;
     
-    point_to= (hi << 8) | lo;
+    point_to = (hi << 8) | lo;
+
+    if(lo == 0x00FF) //BUG HARDWARE! 
+        wrap = 1;
 
     lo = cpu_read_byte(ctx, point_to);
-    hi = cpu_read_byte(ctx, point_to + 1);
+
+    if(wrap != 1)
+        hi = cpu_read_byte(ctx, point_to + 1);
+    else
+        hi = cpu_read_byte(ctx, point_to & 0xFF00);
 
     ctx->operand_addr = (hi << 8) | lo;
 

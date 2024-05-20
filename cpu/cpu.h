@@ -50,8 +50,8 @@ typedef struct cpu{
     uint8_t cur_opcode;
     uint8_t remaining_cycles;
     uint8_t fetched;
-    uint16_t operand_addr; //Indirizzo (ottenuto dalla modalità indirizzamento) dell'operando di cui eseguire il fetch
-
+    uint16_t abs_addr; //Indirizzo (ottenuto dalla modalità indirizzamento) dell'operando di cui eseguire il fetch
+    int8_t rel_addr;
 
 }cpu;
 
@@ -64,9 +64,7 @@ uint8_t cycles;
 
 }instruction_t;
 
-/*
-    Addressing Modes
-*/
+/*=========================Addressing Modes=======================================*/
 static uint8_t IMP(cpu* ctx); static uint8_t IMM(cpu* ctx);
 static uint8_t ZP0(cpu* ctx); static uint8_t ZPX(cpu* ctx);
 static uint8_t ZPY(cpu* ctx); static uint8_t ABS(cpu* ctx);
@@ -74,9 +72,7 @@ static uint8_t ABX(cpu* ctx); static uint8_t ABY(cpu* ctx);
 static uint8_t IND(cpu* ctx); static uint8_t IZX(cpu* ctx);
 static uint8_t IZY(cpu* ctx); static uint8_t REL(cpu* ctx);
 
-/*
-    Opcodes
-*/
+/*=========================Operations=======================================*/
 
 static uint8_t XXX(cpu* ctx);    static uint8_t LDX(cpu* ctx);    static uint8_t LDY(cpu* ctx);
 static uint8_t LDA(cpu* ctx);    static uint8_t BPL(cpu* ctx);    static uint8_t JSR(cpu* ctx);

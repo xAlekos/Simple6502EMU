@@ -62,6 +62,15 @@ void clock(cpu* ctx){
     
 }
 
+
+uint8_t fetch(cpu* ctx){
+
+    if(!(instrunctions_table[ctx->cur_opcode].addr_mode == &IMP))
+    ctx->fetched = cpu_read_byte(ctx,ctx->abs_addr);
+    return ctx->fetched;
+}
+/*=========================Addressing Modes=======================================*/
+
 //Abbiamo accorpato IMP ed A come addressing mode
 uint8_t IMP(cpu* ctx)
 {
@@ -72,32 +81,32 @@ uint8_t IMP(cpu* ctx)
 
 uint8_t IMM(cpu *ctx)
 {
-    ctx->operand_addr = ctx->pc;
+    ctx->abs_addr = ctx->pc;
     ctx->pc++;
     return 0;
 }
 
 uint8_t ZP0(cpu *ctx){
 
-    ctx->operand_addr = cpu_read_byte(ctx,ctx->pc);
+    ctx->abs_addr = cpu_read_byte(ctx,ctx->pc);
     ctx->pc++;
-    ctx->operand_addr &= 0x00FF;
+    ctx->abs_addr &= 0x00FF;
     return 0;
 }
 
 uint8_t ZPX(cpu *ctx){
 
-    ctx->operand_addr = cpu_read_byte(ctx,ctx->pc) + ctx->x;
+    ctx->abs_addr = cpu_read_byte(ctx,ctx->pc) + ctx->x;
     ctx->pc++;
-    ctx->operand_addr &= 0x00FF;
+    ctx->abs_addr &= 0x00FF;
     return 0;
 }
 
 uint8_t ZPY(cpu *ctx){
     
-    ctx->operand_addr = cpu_read_byte(ctx,ctx->pc) + ctx->y;
+    ctx->abs_addr = cpu_read_byte(ctx,ctx->pc) + ctx->y;
     ctx->pc++;
-    ctx->operand_addr &= 0x00FF;
+    ctx->abs_addr &= 0x00FF;
     return 0;
 }
 
@@ -110,7 +119,7 @@ uint8_t ABS(cpu *ctx){
     uint8_t hi = cpu_read_byte(ctx,ctx->pc);
     ctx->pc++;
 
-    ctx->operand_addr= (hi << 8) | lo;
+    ctx->abs_addr= (hi << 8) | lo;
 
     return 0;
 }
@@ -123,10 +132,10 @@ uint8_t ABX(cpu *ctx){
     uint8_t hi = cpu_read_byte(ctx,ctx->pc);
     ctx->pc++;
     
-    ctx->operand_addr= (hi << 8) | lo;
-    ctx->operand_addr += ctx->x;
+    ctx->abs_addr= (hi << 8) | lo;
+    ctx->abs_addr += ctx->x;
 
-    if((ctx->operand_addr & 0xFF00) != (hi << 8))
+    if((ctx->abs_addr & 0xFF00) != (hi << 8))
         return 1;
     else
         return 0;
@@ -140,10 +149,10 @@ uint8_t ABY(cpu *ctx){
     uint8_t hi = cpu_read_byte(ctx,ctx->pc);
     ctx->pc++;
     
-    ctx->operand_addr= (hi << 8) | lo;
-    ctx->operand_addr += ctx->y;
+    ctx->abs_addr= (hi << 8) | lo;
+    ctx->abs_addr += ctx->y;
 
-    if((ctx->operand_addr & 0xFF00) != (hi << 8))
+    if((ctx->abs_addr & 0xFF00) != (hi << 8))
         return 1;
     else
         return 0;
@@ -172,8 +181,95 @@ uint8_t IND(cpu *ctx){
     else
         hi = cpu_read_byte(ctx, point_to & 0xFF00);
 
-    ctx->operand_addr = (hi << 8) | lo;
+    ctx->abs_addr = (hi << 8) | lo;
 
-    //TODO AGGIUNGERE BUG
     return 0;
+}
+
+uint8_t IZX(cpu *ctx){
+
+    uint16_t point_to = cpu_read_byte(ctx,ctx->pc) + ctx->x;
+    ctx->pc++;
+
+    point_to &= 0X00FF;
+    uint8_t lo = cpu_read_byte(ctx,point_to);
+    uint8_t hi = cpu_read_byte(ctx, point_to + 1);
+    ctx->abs_addr = (hi << 8) | lo;
+     
+    return 0;
+}
+
+uint8_t IZY(cpu *ctx){
+
+    uint16_t point_to = cpu_read_byte(ctx,ctx->pc);
+    ctx->pc++;
+    point_to &= 0X00FF;
+
+    uint8_t lo = cpu_read_byte(ctx,point_to);
+    uint8_t hi = cpu_read_byte(ctx, point_to + 1);
+    ctx->abs_addr = ((hi << 8) | lo) + ctx->y;
+
+    if((ctx->abs_addr & 0xFF00) != (hi << 8))
+        return 1;
+    else
+        return 0;
+}
+
+uint8_t REL(cpu *ctx){
+
+    ctx->rel_addr = cpu_read_byte(ctx,ctx->pc);
+    ctx->pc++;
+    
+    if(ctx->rel_addr & 0x80) // se è negativo estendi il segno!
+        ctx->rel_addr |= 0XFF00;
+
+    return 0;
+}
+
+
+/*=========================Operations=======================================*/
+
+uint8_t AND(cpu *ctx){
+
+    fetch(ctx);
+    ctx->a = ctx->a & ctx->fetched;
+    set_flag(ctx, Z, ctx->a == 0x00);
+    set_flag(ctx, N, ctx->a & 0x80);
+    return 1;
+}
+
+
+uint8_t ADC(cpu *ctx)
+{
+    uint16_t sum;
+    fetch(ctx);
+    //Facciamo il casting a 16 bit per poter rilevare un eventuale carry 
+    sum = (uint16_t)ctx->a + (uint16_t)ctx->fetched + (uint16_t)get_flag(ctx,C);
+
+    set_flag(ctx, C, sum > 255);
+    set_flag(ctx, Z, (sum & 0x00FF) == 0x00);
+    set_flag(ctx, N, sum & 0x80);
+    set_flag(ctx, V, ((ctx->a ^ sum) & (~(ctx->a ^ ctx->fetched))) & 0x80);
+    
+    ctx->a = sum & 0x00FF;
+
+    return 1;
+}
+
+uint8_t SBC(cpu *ctx)
+{
+    uint16_t sub;
+    fetch(ctx);
+    //Facciamo il casting a 16 bit per poter rilevare un eventuale carry 
+    sub = (uint16_t)ctx->a - (uint16_t)ctx->fetched + (uint16_t)get_flag(ctx,C);
+
+    set_flag(ctx, C, sum > 255);
+    set_flag(ctx, Z, (sum & 0x00FF) == 0x00);
+    set_flag(ctx, N, sum & 0x80);
+    set_flag(ctx, V, ((ctx->a ^ sum) & (~(ctx->a ^ ctx->fetched))) & 0x80);
+    
+    ctx->a = sum & 0x00FF;
+
+    return 1;
+}
 }

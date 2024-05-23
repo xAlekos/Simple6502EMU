@@ -257,7 +257,122 @@ uint8_t ADC(cpu *ctx)
     return 1;
 }
 
+uint8_t STA(cpu *ctx)
+{
 
+    cpu_write_byte(ctx,ctx->abs_addr,ctx->a);
+
+    return 0;
+}
+
+uint8_t STX(cpu *ctx)
+{
+
+    cpu_write_byte(ctx,ctx->abs_addr,ctx->x);
+
+    return 0;
+}
+
+uint8_t STY(cpu *ctx)
+{
+
+    cpu_write_byte(ctx,ctx->abs_addr,ctx->y);
+
+    return 0;
+}
+
+uint8_t TAX(cpu* ctx){
+
+    ctx->x = ctx->a;
+    set_flag(ctx,N,ctx->x & 0x80);
+    set_flag(ctx,Z,ctx->x == 0x00);
+    
+    return 0;
+}
+
+uint8_t TAY(cpu* ctx){
+
+    ctx->y = ctx->a;
+    set_flag(ctx,N,ctx->y & 0x80);
+    set_flag(ctx,Z,ctx->y == 0x00);
+    
+    return 0;
+}
+
+uint8_t TSX(cpu* ctx){
+
+    ctx->x = ctx->sp;
+    set_flag(ctx,N,ctx->x & 0x80);
+    set_flag(ctx,Z,ctx->x == 0x00);
+    
+    return 0;
+}
+
+uint8_t TXA(cpu* ctx){
+
+    ctx->a = ctx->x;
+    set_flag(ctx,N,ctx->a & 0x80);
+    set_flag(ctx,Z,ctx->a == 0x00);
+    
+    return 0;
+}
+
+uint8_t TXS(cpu* ctx){
+
+    ctx->sp = ctx->x;
+  
+    return 0;
+}
+
+uint8_t TYA(cpu* ctx){
+
+    ctx->a = ctx->y;
+    set_flag(ctx,N,ctx->a & 0x80);
+    set_flag(ctx,Z,ctx->a == 0x00);
+    
+    return 0;
+}
+
+
+uint8_t INC(cpu* ctx){
+
+    fetch(ctx);
+    uint8_t tmp = ctx->fetched + 1;
+    cpu_write_byte(ctx,ctx->abs_addr,tmp);
+    set_flag(ctx,N,tmp & 0x80);
+    set_flag(ctx,V,tmp & 0x00);
+
+    return 0;
+}
+
+uint8_t DEC(cpu* ctx){
+
+    fetch(ctx);
+    uint8_t tmp = ctx->fetched - 1;
+    cpu_write_byte(ctx,ctx->abs_addr,tmp);
+    set_flag(ctx,N,tmp & 0x80);
+    set_flag(ctx,V,tmp & 0x00);
+
+    return 0;
+}
+
+uint8_t DEX(cpu* ctx){
+
+    ctx->x--;
+    set_flag(ctx,N,ctx->x & 0x80);
+    set_flag(ctx,V,ctx->x & 0x00);
+
+    return 0;
+}
+
+uint8_t DEY(cpu* ctx){
+
+    ctx->y--;
+    set_flag(ctx,N,ctx->y & 0x80);
+    set_flag(ctx,V,ctx->y & 0x00);
+
+    return 0;
+}
 
 uint8_t SBC(cpu *ctx){
     
@@ -277,7 +392,13 @@ uint8_t SBC(cpu *ctx){
     return 1;
 }
 
-uint8_t BCS(cpu *ctx){
+uint8_t NOP(cpu *ctx)
+{
+    return 0;
+}
+
+uint8_t BCS(cpu *ctx)
+{
 
     if(get_flag(ctx,C) == 1){
 
@@ -357,7 +478,61 @@ uint8_t BNE(cpu *ctx){
     return 0;
 }
 
-uint8_t BPL(cpu *ctx){
+uint8_t LDA(cpu *ctx){
+
+    fetch(ctx);
+    ctx->a = ctx->fetched;
+
+    set_flag(ctx,N, ctx->a & 0x80);
+    set_flag(ctx,Z, ctx->a == 0x00);
+
+    return 0;
+}
+
+uint8_t LDX(cpu *ctx){
+
+    fetch(ctx);
+    ctx->x = ctx->fetched;
+
+    set_flag(ctx,N, ctx->x & 0x80);
+    set_flag(ctx,Z, ctx->x == 0x00);
+
+    return 0;
+}
+
+uint8_t LDY(cpu *ctx){
+
+    fetch(ctx);
+    ctx->y = ctx->fetched;
+
+    set_flag(ctx,N, ctx->y & 0x80);
+    set_flag(ctx,Z, ctx->y == 0x00);
+
+    return 0;
+}
+
+uint8_t LSR(cpu *ctx)
+{
+    fetch(ctx);
+
+    set_flag(ctx,C,ctx->fetched & 0x01);
+    
+    uint16_t tmp = ctx->fetched >> 1;
+
+    set_flag(ctx,Z,(tmp & 0X00FF) == 0X0000);
+    set_flag(ctx,N,(tmp & 0X00FF) & 0x0080);
+
+
+    if(instrunctions_table[ctx->cur_opcode].addr_mode == &IMP)
+        ctx->a = tmp & 0x00FF;
+    else
+        cpu_write_byte(ctx,ctx->abs_addr,tmp & 0X00FF);
+
+    return 0;
+}
+
+uint8_t BPL(cpu *ctx)
+{
 
     if(get_flag(ctx,N) == 0){
 

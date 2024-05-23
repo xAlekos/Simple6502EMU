@@ -229,7 +229,9 @@ uint8_t REL(cpu *ctx){
 
 /*=========================Operations=======================================*/
 
-uint8_t AND(cpu *ctx){
+
+uint8_t AND(cpu *ctx)
+{
 
     fetch(ctx);
     ctx->a = ctx->a & ctx->fetched;
@@ -237,7 +239,6 @@ uint8_t AND(cpu *ctx){
     set_flag(ctx, N, ctx->a & 0x80);
     return 1;
 }
-
 
 uint8_t ADC(cpu *ctx)
 {
@@ -256,20 +257,191 @@ uint8_t ADC(cpu *ctx)
     return 1;
 }
 
-uint8_t SBC(cpu *ctx)
-{
+
+
+uint8_t SBC(cpu *ctx){
+    
     uint16_t sub;
     fetch(ctx);
+    uint16_t fetched_inverted = (uint16_t)ctx->fetched ^ 0x00FF;
     //Facciamo il casting a 16 bit per poter rilevare un eventuale carry 
-    sub = (uint16_t)ctx->a - (uint16_t)ctx->fetched + (uint16_t)get_flag(ctx,C);
+    sub = (uint16_t)ctx->a + fetched_inverted + (uint16_t)get_flag(ctx,C);
 
-    set_flag(ctx, C, sum > 255);
-    set_flag(ctx, Z, (sum & 0x00FF) == 0x00);
-    set_flag(ctx, N, sum & 0x80);
-    set_flag(ctx, V, ((ctx->a ^ sum) & (~(ctx->a ^ ctx->fetched))) & 0x80);
+    set_flag(ctx, C, sub > 255);
+    set_flag(ctx, Z, (sub & 0x00FF) == 0x00);
+    set_flag(ctx, N, sub & 0x80);
+    set_flag(ctx, V, ((ctx->a ^ sub) & (~(ctx->a ^ ctx->fetched))) & 0x80);
     
-    ctx->a = sum & 0x00FF;
+    ctx->a = sub & 0x00FF;
 
     return 1;
 }
+
+uint8_t BCS(cpu *ctx){
+
+    if(get_flag(ctx,C) == 1){
+
+        ctx->remaining_cycles++;
+        ctx->abs_addr = ctx->pc + ctx->rel_addr;
+
+        if((ctx->abs_addr & 0xFF00) != (ctx->pc & 0XFF00))
+            ctx->remaining_cycles++;
+
+       ctx->pc = ctx->abs_addr;
+    }
+
+    return 0;
+}
+
+uint8_t BCC(cpu *ctx){
+
+    if(get_flag(ctx,C) == 0){
+
+        ctx->remaining_cycles++;
+        ctx->abs_addr = ctx->pc + ctx->rel_addr;
+
+        if((ctx->abs_addr & 0xFF00) != (ctx->pc & 0XFF00))
+            ctx->remaining_cycles++;
+
+       ctx->pc = ctx->abs_addr;
+    }
+
+    return 0;
+}
+
+uint8_t BEQ(cpu *ctx){
+
+    if(get_flag(ctx,Z) == 1){
+
+        ctx->remaining_cycles++;
+        ctx->abs_addr = ctx->pc + ctx->rel_addr;
+
+        if((ctx->abs_addr & 0xFF00) != (ctx->pc & 0XFF00))
+            ctx->remaining_cycles++;
+
+       ctx->pc = ctx->abs_addr;
+    }
+
+    return 0;
+}
+
+uint8_t BMI(cpu *ctx){
+
+    if(get_flag(ctx,N) == 1){
+
+        ctx->remaining_cycles++;
+        ctx->abs_addr = ctx->pc + ctx->rel_addr;
+
+        if((ctx->abs_addr & 0xFF00) != (ctx->pc & 0XFF00))
+            ctx->remaining_cycles++;
+
+       ctx->pc = ctx->abs_addr;
+    }
+
+    return 0;
+}
+
+uint8_t BNE(cpu *ctx){
+
+    if(get_flag(ctx,Z) == 0){
+
+        ctx->remaining_cycles++;
+        ctx->abs_addr = ctx->pc + ctx->rel_addr;
+
+        if((ctx->abs_addr & 0xFF00) != (ctx->pc & 0XFF00))
+            ctx->remaining_cycles++;
+
+       ctx->pc = ctx->abs_addr;
+    }
+
+    return 0;
+}
+
+uint8_t BPL(cpu *ctx){
+
+    if(get_flag(ctx,N) == 0){
+
+        ctx->remaining_cycles++;
+        ctx->abs_addr = ctx->pc + ctx->rel_addr;
+
+        if((ctx->abs_addr & 0xFF00) != (ctx->pc & 0XFF00))
+            ctx->remaining_cycles++;
+
+       ctx->pc = ctx->abs_addr;
+    }
+
+    return 0;
+}
+
+uint8_t BVC(cpu *ctx){
+
+    if(get_flag(ctx,V) == 0){
+
+        ctx->remaining_cycles++;
+        ctx->abs_addr = ctx->pc + ctx->rel_addr;
+
+        if((ctx->abs_addr & 0xFF00) != (ctx->pc & 0XFF00))
+            ctx->remaining_cycles++;
+
+       ctx->pc = ctx->abs_addr;
+    }
+
+    return 0;
+}
+
+uint8_t BVS(cpu *ctx){
+
+    if(get_flag(ctx,V) == 1){
+
+        ctx->remaining_cycles++;
+        ctx->abs_addr = ctx->pc + ctx->rel_addr;
+
+        if((ctx->abs_addr & 0xFF00) != (ctx->pc & 0XFF00))
+            ctx->remaining_cycles++;
+
+       ctx->pc = ctx->abs_addr;
+    }
+
+    return 0;
+}
+
+uint8_t SEC(cpu *ctx)
+{
+    set_flag(ctx,C,true);
+    return 0;
+}
+
+uint8_t SED(cpu *ctx)
+{
+    set_flag(ctx,D,true);
+    return 0;
+}
+
+uint8_t SEI(cpu *ctx)
+{
+    set_flag(ctx,I,true);
+    return 0;
+}
+
+uint8_t CLC(cpu *ctx)
+{
+    set_flag(ctx,C,false);
+    return 0;
+}
+
+uint8_t CLI(cpu *ctx)
+{
+    set_flag(ctx,I,false);
+    return 0;
+}
+
+uint8_t CLV(cpu *ctx)
+{
+    set_flag(ctx,V,false);
+}
+
+uint8_t CLD(cpu *ctx)
+{
+    set_flag(ctx,D,false);
+    return 0;
 }

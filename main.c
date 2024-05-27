@@ -1,17 +1,14 @@
-#include "./utils/utils.h"
+#include "./cpu/cpu.h"
+#include <raylib.h>
 
 
-
-/*
-
-    Reminder per ricordarmi che non so contare! 
-
-*/
 int main(int argc, char** argv){
-    int8_t a = - 128;
-    int8_t sum = a - 128;
-    printf("%d",sum);
-    
+    InitWindow(1024,1024,"6502 emu");
+    SetTargetFPS(60);
+
+    while(!WindowShouldClose()){
+        ClearBackground(BLACK);
+    }
 }
 
 

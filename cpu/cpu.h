@@ -1,3 +1,6 @@
+
+#ifndef CPU_H
+#define CPU_H
 #include "../utils/utils.h"
 #include "../memory/memory.h"
 
@@ -58,8 +61,8 @@ typedef struct cpu{
 typedef struct instruction{
 
 char* name;
-uint8_t (*op)(void);
-uint8_t (*addr_mode)(void);
+uint8_t (*op)(cpu*);
+uint8_t (*addr_mode)(cpu*);
 uint8_t cycles;
 
 }instruction_t;
@@ -218,3 +221,4 @@ void set_flag(cpu* ctx,sr_flag_t flag, bool set_to);
 bool get_flag(cpu* ctx, sr_flag_t flag);
 
 void init_instruction_lookup_table(instruction_t* table);
+#endif

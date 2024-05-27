@@ -51,9 +51,9 @@ void clock(cpu* ctx){
 
         ctx->remaining_cycles = instrunctions_table[ctx->cur_opcode].cycles;
 
-        uint8_t another_cycle_1 = (instrunctions_table[ctx->cur_opcode].addr_mode());
+        uint8_t another_cycle_1 = (instrunctions_table[ctx->cur_opcode].addr_mode(ctx));
 
-        uint8_t another_cycle_2 = (instrunctions_table[ctx->cur_opcode].op());
+        uint8_t another_cycle_2 = (instrunctions_table[ctx->cur_opcode].op(ctx));
 
         ctx->remaining_cycles += (another_cycle_1 & another_cycle_2);
 
@@ -741,7 +741,7 @@ uint8_t CLD(cpu *ctx)
 
 uint8_t CMP(cpu *ctx)
 {
-    fetch();
+    fetch(ctx);
     int8_t tmp = ctx->a - ctx->fetched;
     set_flag(ctx,N,ctx->a >= ctx->fetched);
     set_flag(ctx,N,tmp & 0x80);
@@ -752,7 +752,7 @@ uint8_t CMP(cpu *ctx)
 
 uint8_t CPX(cpu *ctx)
 {
-    fetch();
+    fetch(ctx);
     int8_t tmp = ctx->x - ctx->fetched;
     set_flag(ctx,N,ctx->x >= ctx->fetched);
     set_flag(ctx,N,tmp & 0x80);
@@ -763,7 +763,7 @@ uint8_t CPX(cpu *ctx)
 
 uint8_t CPY(cpu *ctx)
 {
-    fetch();
+    fetch(ctx);
     int8_t tmp = ctx->y - ctx->fetched;
     set_flag(ctx,N,ctx->y >= ctx->fetched);
     set_flag(ctx,N,tmp & 0x80);
@@ -786,8 +786,8 @@ uint8_t PHP(cpu *ctx)
 
     cpu_write_byte(ctx,0x0100 + ctx->sp, ctx->status);
 
-    SetFlag(B, 0);
-	SetFlag(U, 0);
+    set_flag(ctx,B, 0);
+	set_flag(ctx,U, 0);
 
     ctx->sp--;
 
@@ -799,8 +799,8 @@ uint8_t PLA(cpu *ctx)
     ctx->sp++;
     ctx->a = cpu_read_byte(ctx,0x0100 + ctx->sp);
 
-    SetFlag(N, ctx->a & 0x80);
-	SetFlag(Z, ctx->a == 0x00);
+    set_flag(ctx, N, ctx->a & 0x80);
+	set_flag(ctx, Z, ctx->a == 0x00);
 
 
     return 0;
@@ -810,7 +810,7 @@ uint8_t PLP(cpu *ctx)
 {
     ctx->sp++;
 	ctx->sp = cpu_read_byte(ctx,0x0100 + ctx->sp);
-	SetFlag(U, 1);
+	set_flag(ctx,U, 1);
 
     return 0;
 }
@@ -864,7 +864,7 @@ uint8_t BRK(cpu *ctx){
 
     cpu_write_byte(ctx,0x0100 + ctx->sp, ctx->status);
 
-    SetFlag(B, 0);
+    set_flag(ctx,B, 0);
 
     ctx->sp--;
 
@@ -876,8 +876,8 @@ uint8_t RTI(cpu *ctx){
     ctx->sp++;
 
 	ctx->sp = cpu_read_byte(ctx,0x0100 + ctx->sp);
-	SetFlag(ctx, U, 0);
-    SetFlag(ctx, B, 0);
+	set_flag(ctx, U, 0);
+    set_flag(ctx, B, 0);
 
     ctx->sp++;
     uint8_t pc_lo = cpu_read_byte(ctx,0x0100 + ctx->sp);
@@ -887,4 +887,10 @@ uint8_t RTI(cpu *ctx){
     ctx->pc = (pc_hi << 8) | pc_lo;
 
     return 0;
+}
+
+
+int main(){
+
+    printf("bella a tutti!");
 }

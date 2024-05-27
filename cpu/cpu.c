@@ -52,6 +52,7 @@ void clock(cpu* ctx){
         ctx->remaining_cycles = instrunctions_table[ctx->cur_opcode].cycles;
 
         uint8_t another_cycle_1 = (instrunctions_table[ctx->cur_opcode].addr_mode());
+
         uint8_t another_cycle_2 = (instrunctions_table[ctx->cur_opcode].op());
 
         ctx->remaining_cycles += (another_cycle_1 & another_cycle_2);
@@ -240,6 +241,35 @@ uint8_t AND(cpu *ctx)
     return 1;
 }
 
+uint8_t EOR(cpu *ctx)
+{
+
+    fetch(ctx);
+    ctx->a = ctx->a ^ ctx->fetched;
+    set_flag(ctx, Z, ctx->a == 0x00);
+    set_flag(ctx, N, ctx->a & 0x80);
+    return 1;
+}
+
+uint8_t ORA(cpu *ctx)
+{
+
+    fetch(ctx);
+    ctx->a = ctx->a | ctx->fetched;
+    set_flag(ctx, Z, ctx->a == 0x00);
+    set_flag(ctx, N, ctx->a & 0x80);
+    return 1;
+}
+
+uint8_t BIT(cpu *ctx){
+    fetch(ctx);
+    set_flag(ctx,N,ctx->fetched & (1 << 7));
+    set_flag(ctx,V,ctx->fetched & (1 << 6));
+    set_flag(ctx,Z, ctx->a & ctx->fetched);
+
+    return 0;
+}
+
 uint8_t ADC(cpu *ctx)
 {
     uint16_t sum;
@@ -308,6 +338,8 @@ uint8_t TSX(cpu* ctx){
     return 0;
 }
 
+
+
 uint8_t TXA(cpu* ctx){
 
     ctx->a = ctx->x;
@@ -340,9 +372,23 @@ uint8_t INC(cpu* ctx){
     uint8_t tmp = ctx->fetched + 1;
     cpu_write_byte(ctx,ctx->abs_addr,tmp);
     set_flag(ctx,N,tmp & 0x80);
-    set_flag(ctx,V,tmp & 0x00);
+    set_flag(ctx,Z,tmp & 0x00);
 
     return 0;
+}
+
+uint8_t INX(cpu *ctx){
+
+    ctx->x++;
+    set_flag(ctx,N,ctx->x & 0x80);
+    set_flag(ctx,Z,ctx->x & 0x00);
+}
+
+uint8_t INY(cpu *ctx){
+
+    ctx->y++;
+    set_flag(ctx,N,ctx->y & 0x80);
+    set_flag(ctx,Z,ctx->y & 0x00);
 }
 
 uint8_t DEC(cpu* ctx){
@@ -351,7 +397,7 @@ uint8_t DEC(cpu* ctx){
     uint8_t tmp = ctx->fetched - 1;
     cpu_write_byte(ctx,ctx->abs_addr,tmp);
     set_flag(ctx,N,tmp & 0x80);
-    set_flag(ctx,V,tmp & 0x00);
+    set_flag(ctx,Z,tmp & 0x00);
 
     return 0;
 }
@@ -360,7 +406,7 @@ uint8_t DEX(cpu* ctx){
 
     ctx->x--;
     set_flag(ctx,N,ctx->x & 0x80);
-    set_flag(ctx,V,ctx->x & 0x00);
+    set_flag(ctx,Z,ctx->x & 0x00);
 
     return 0;
 }
@@ -369,7 +415,7 @@ uint8_t DEY(cpu* ctx){
 
     ctx->y--;
     set_flag(ctx,N,ctx->y & 0x80);
-    set_flag(ctx,V,ctx->y & 0x00);
+    set_flag(ctx,Z,ctx->y & 0x00);
 
     return 0;
 }
@@ -511,25 +557,93 @@ uint8_t LDY(cpu *ctx){
     return 0;
 }
 
+
+
+uint8_t ASL(cpu *ctx)
+{
+    fetch(ctx);
+
+    set_flag(ctx,C,ctx->fetched & 0x80);
+    
+    ctx->fetched = ctx->fetched << 1;
+
+    set_flag(ctx,Z,ctx->fetched == 0X00);
+    set_flag(ctx,N,ctx->fetched & 0x80);
+
+
+    if(instrunctions_table[ctx->cur_opcode].addr_mode == &IMP)
+        ctx->a = ctx->fetched & 0x00FF;
+    else
+        cpu_write_byte(ctx,ctx->abs_addr,ctx->fetched);
+
+    return 0;
+}
+
+
+
 uint8_t LSR(cpu *ctx)
 {
     fetch(ctx);
 
     set_flag(ctx,C,ctx->fetched & 0x01);
     
-    uint16_t tmp = ctx->fetched >> 1;
+    ctx->fetched = ctx->fetched >> 1;
 
-    set_flag(ctx,Z,(tmp & 0X00FF) == 0X0000);
-    set_flag(ctx,N,(tmp & 0X00FF) & 0x0080);
+    set_flag(ctx,Z,ctx->fetched == 0X00);
+    set_flag(ctx,N,ctx->fetched & 0x80);
 
 
     if(instrunctions_table[ctx->cur_opcode].addr_mode == &IMP)
-        ctx->a = tmp & 0x00FF;
+        ctx->a = ctx->fetched;
     else
-        cpu_write_byte(ctx,ctx->abs_addr,tmp & 0X00FF);
+        cpu_write_byte(ctx,ctx->abs_addr,ctx->fetched);
 
     return 0;
 }
+
+uint8_t ROL(cpu *ctx)
+{
+    fetch(ctx);
+
+    set_flag(ctx,C,ctx->fetched & 0x80);
+    
+    ctx->fetched = (ctx->fetched << 1)  | get_flag(ctx,C);
+    
+
+    set_flag(ctx,Z,ctx->fetched == 0X00);
+    set_flag(ctx,N,ctx->fetched & 0x80);
+
+
+    if(instrunctions_table[ctx->cur_opcode].addr_mode == &IMP)
+        ctx->a = ctx->fetched;
+    else
+        cpu_write_byte(ctx,ctx->abs_addr,ctx->fetched);
+
+    return 0;
+}
+
+uint8_t ROR(cpu *ctx)
+{
+    fetch(ctx);
+
+    set_flag(ctx,C,ctx->fetched & 0x01);
+    
+    ctx->fetched = (ctx->fetched >> 1)  | get_flag(ctx,C) << 7;
+    
+
+    set_flag(ctx,Z,ctx->fetched == 0X00);
+    set_flag(ctx,N,ctx->fetched & 0x80);
+
+
+    if(instrunctions_table[ctx->cur_opcode].addr_mode == &IMP)
+        ctx->a = ctx->fetched;
+    else
+        cpu_write_byte(ctx,ctx->abs_addr,ctx->fetched);
+
+    return 0;
+}
+
+
 
 uint8_t BPL(cpu *ctx)
 {
@@ -618,5 +732,114 @@ uint8_t CLV(cpu *ctx)
 uint8_t CLD(cpu *ctx)
 {
     set_flag(ctx,D,false);
+    return 0;
+}
+
+uint8_t CMP(cpu *ctx)
+{
+    fetch();
+    int8_t tmp = ctx->a - ctx->fetched;
+    set_flag(ctx,N,ctx->a >= ctx->fetched);
+    set_flag(ctx,N,tmp & 0x80);
+    set_flag(ctx,Z,tmp == 0x00);
+
+    return 0;
+}
+
+uint8_t CPX(cpu *ctx)
+{
+    fetch();
+    int8_t tmp = ctx->x - ctx->fetched;
+    set_flag(ctx,N,ctx->x >= ctx->fetched);
+    set_flag(ctx,N,tmp & 0x80);
+    set_flag(ctx,Z,tmp == 0x00);
+
+    return 0;
+}
+
+uint8_t CPY(cpu *ctx)
+{
+    fetch();
+    int8_t tmp = ctx->y - ctx->fetched;
+    set_flag(ctx,N,ctx->y >= ctx->fetched);
+    set_flag(ctx,N,tmp & 0x80);
+    set_flag(ctx,Z,tmp == 0x00);
+
+    return 0;
+}
+
+uint8_t PHA(cpu *ctx)
+{
+    cpu_write_byte(ctx,0x0100 + ctx->sp, ctx->a);
+    ctx->sp--;
+    return 0;
+}
+
+uint8_t PHP(cpu *ctx)
+{
+    set_flag(ctx,B,1);
+    set_flag(ctx,U,1);
+
+    cpu_write_byte(ctx,0x0100 + ctx->sp, ctx->status);
+
+    SetFlag(B, 0);
+	SetFlag(U, 0);
+
+    ctx->sp--;
+
+    return 0;
+}
+
+uint8_t PLA(cpu *ctx)
+{
+    ctx->sp++;
+    ctx->a = cpu_read_byte(ctx,0x0100 + ctx->sp);
+
+    SetFlag(N, ctx->a & 0x80);
+	SetFlag(Z, ctx->a == 0x00);
+
+
+    return 0;
+}
+
+uint8_t PLP(cpu *ctx)
+{
+    ctx->sp++;
+	ctx->sp = cpu_read_byte(0x0100 + ctx->sp);
+	SetFlag(U, 1);
+
+    return 0;
+}
+
+uint8_t JMP(cpu *ctx)
+{
+    ctx->pc = ctx->abs_addr;
+    return 0;
+}
+
+uint8_t JSR(cpu *ctx)
+{
+    ctx->pc--; // indica l'istruzione attuale
+
+    cpu_write_byte(ctx,0x0100 + ctx->sp,(ctx->pc >> 8) & 0x00FF);
+    ctx->sp--;
+
+    cpu_write_byte(ctx,0x0100 + ctx->sp,ctx->pc & 0x00FF);
+    ctx->sp--;
+
+    ctx->pc = ctx->abs_addr;
+
+    return 0;
+}
+
+uint8_t RTS(cpu *ctx)
+{
+    ctx->sp++;
+    uint8_t pc_lo = cpu_read_byte(ctx,0x0100 + ctx->sp);
+    ctx->sp++;
+    uint8_t pc_hi = cpu_read_byte(ctx,0x0100 + ctx->sp);
+
+    ctx->pc = (pc_hi << 8) | pc_lo;
+    ctx->pc++;
     return 0;
 }

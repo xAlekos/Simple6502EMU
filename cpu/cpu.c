@@ -546,7 +546,13 @@ uint8_t LDX(cpu *ctx){
     return 0;
 }
 
-uint8_t LDY(cpu *ctx){
+uint8_t XXX(cpu *ctx)
+{
+    return 0;
+}
+
+uint8_t LDY(cpu *ctx)
+{
 
     fetch(ctx);
     ctx->y = ctx->fetched;
@@ -556,8 +562,6 @@ uint8_t LDY(cpu *ctx){
 
     return 0;
 }
-
-
 
 uint8_t ASL(cpu *ctx)
 {
@@ -805,7 +809,7 @@ uint8_t PLA(cpu *ctx)
 uint8_t PLP(cpu *ctx)
 {
     ctx->sp++;
-	ctx->sp = cpu_read_byte(0x0100 + ctx->sp);
+	ctx->sp = cpu_read_byte(ctx,0x0100 + ctx->sp);
 	SetFlag(U, 1);
 
     return 0;
@@ -841,5 +845,46 @@ uint8_t RTS(cpu *ctx)
 
     ctx->pc = (pc_hi << 8) | pc_lo;
     ctx->pc++;
+    return 0;
+}
+
+uint8_t BRK(cpu *ctx){
+
+    ctx->pc++;
+
+    set_flag(ctx,I,1);
+
+    cpu_write_byte(ctx,0x0100 + ctx->sp,(ctx->pc >> 8) & 0x00FF);
+    ctx->sp--;
+
+    cpu_write_byte(ctx,0x0100 + ctx->sp,ctx->pc & 0x00FF);
+    ctx->sp--;
+
+    set_flag(ctx,B,1);
+
+    cpu_write_byte(ctx,0x0100 + ctx->sp, ctx->status);
+
+    SetFlag(B, 0);
+
+    ctx->sp--;
+
+    return 0;
+}
+
+uint8_t RTI(cpu *ctx){
+
+    ctx->sp++;
+
+	ctx->sp = cpu_read_byte(ctx,0x0100 + ctx->sp);
+	SetFlag(ctx, U, 0);
+    SetFlag(ctx, B, 0);
+
+    ctx->sp++;
+    uint8_t pc_lo = cpu_read_byte(ctx,0x0100 + ctx->sp);
+    ctx->sp++;
+    uint8_t pc_hi = cpu_read_byte(ctx,0x0100 + ctx->sp);
+
+    ctx->pc = (pc_hi << 8) | pc_lo;
+
     return 0;
 }

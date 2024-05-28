@@ -106,6 +106,8 @@ void nmi();
 
 cpu* cpu_init();
 
+extern instruction_t instrunctions_table[256];
+
 void connect_memory(cpu* ctx,mem* memory);
 
 uint8_t cpu_read_byte(cpu* ctx,uint16_t address);
@@ -116,5 +118,4 @@ void set_flag(cpu* ctx,sr_flag_t flag, bool set_to);
 
 bool get_flag(cpu* ctx, sr_flag_t flag);
 
-void init_instruction_lookup_table(instruction_t* table);
 #endif

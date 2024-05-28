@@ -126,6 +126,27 @@ void cpu_write_byte(cpu* ctx,uint16_t address, uint8_t value){
 
 }
 
+
+void reset(cpu* ctx){
+
+    ctx->a = 0;
+    ctx->x = 0;
+    ctx->y = 0;
+    ctx->sp = 0xFD;
+    ctx->status = 0x00 | U;
+
+    ctx->abs_addr = 0XFFFC;
+    uint16_t lo = cpu_read_byte(ctx,ctx->abs_addr);
+    uint16_t hi = cpu_read_byte(ctx,ctx->abs_addr + 1);
+    ctx->pc = (hi << 8) | lo;
+
+    ctx->abs_addr = 0x0000;
+    ctx->rel_addr = 0x00;
+    ctx->fetched = 0x00;
+
+    ctx->remaining_cycles = 8;
+}
+
 void set_flag(cpu* ctx,sr_flag_t flag, bool set_to){
 
     if(set_to)

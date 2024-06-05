@@ -1016,7 +1016,7 @@ uint8_t RTI(cpu *ctx){
 
 /*==========================================Disassembler=======================================================*/
 
-char disassembled_instructions[50][100];
+char disassembled_instructions[0XFFFF][0xFF];
 
 void disassemble(cpu* ctx,uint16_t start_address, uint16_t end_address){
 

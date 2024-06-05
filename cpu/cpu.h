@@ -107,7 +107,8 @@ void nmi(cpu* ctx);
 cpu* cpu_init();
 
 extern instruction_t instrunctions_table[256];
-extern char disassembled_instructions[50][100];
+extern char disassembled_instructions[0XFFFF][0xFF];
+
 
 void connect_memory(cpu* ctx,mem* memory);
 

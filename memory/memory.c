@@ -32,5 +32,5 @@ int load_rom_in_memory(mem* memory,char* path,uint16_t offset){
 
     fread(memory->bytes + offset ,1,rom_size,rom);
     fclose(rom);
-    return 0;
+    return rom_size;
 }

@@ -70,7 +70,7 @@ void draw_cycles(cpu* ctx){
 
 void draw_disassembled_code(cpu* ctx,uint16_t start_addr , uint16_t end_addr){
     int ypos = 500;
-    disassemble(ctx,start_addr,min(50,end_addr));
+    
     for(int i = 0; i < 50; i++){
         DrawText(disassembled_instructions[i],800,ypos,22,WHITE);
         ypos+=22;
@@ -84,7 +84,8 @@ int main(int argc, char** argv){
     uint8_t page = 0x00;
 
     InitWindow(1024,1024,"6502 emu");
-    load_rom_in_memory(ctx->memory,"./roms/r",0);
+    int rom_size = load_rom_in_memory(ctx->memory,"./roms/r3",0);
+    disassemble(ctx,ctx->pc,rom_size);
     SetTargetFPS(300);
     ClearBackground(BLACK);
     reset(ctx);

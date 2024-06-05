@@ -1012,3 +1012,110 @@ uint8_t RTI(cpu *ctx){
 
     return 0;
 }
+
+
+/*==========================================Disassembler=======================================================*/
+
+char disassembled_instructions[50][100];
+
+void disassemble(cpu* ctx,uint16_t start_address, uint16_t end_address){
+
+    uint16_t address = start_address;
+    uint16_t instruction_num = 0;
+    uint8_t lo,hi;
+    instruction_t current_instruction;
+
+    while(address < end_address){
+        current_instruction = instrunctions_table[cpu_read_byte(ctx,address)];
+        strcpy(disassembled_instructions[instruction_num],current_instruction.name);
+        uint16_t operand;
+        char formatted_temp[50];
+        if(current_instruction.addr_mode == &IMP){
+
+        }
+        else if(current_instruction.addr_mode == &IMM){
+            address++;
+            operand = cpu_read_byte(ctx,address) & 0x00FF;
+            snprintf(formatted_temp,50," #$%02X",0x00FF & operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &ZP0){
+            address++;
+            operand = cpu_read_byte(ctx,address) & 0x00FF;
+            snprintf(formatted_temp,50," $%02X",0x00FF & operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &ZPX){
+            address++;
+            operand = cpu_read_byte(ctx,address) & 0x00FF;
+            snprintf(formatted_temp,50," $%02X, X",0x00FF & operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &ZPY){
+            address++;
+            operand = cpu_read_byte(ctx,address) & 0x00FF;
+            snprintf(formatted_temp,50," $%02X, Y",0x00FF & operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &ABS){
+            address++;
+            lo = cpu_read_byte(ctx,address);
+            address++;
+            hi = cpu_read_byte(ctx,address);
+            operand = (hi << 8) | lo;
+            snprintf(formatted_temp,50," $%04X",operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+            
+
+        }
+        else if(current_instruction.addr_mode == &ABX){
+            address++;
+            lo = cpu_read_byte(ctx,address);
+            address++;
+            hi = cpu_read_byte(ctx,address);
+            operand = (hi << 8) | lo;
+            snprintf(formatted_temp,50," $%04X, X",operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &ABY){
+            address++;
+            lo = cpu_read_byte(ctx,address);
+            address++;
+            hi = cpu_read_byte(ctx,address);
+            operand = (hi << 8) | lo;
+            snprintf(formatted_temp,50," $%04X, Y",operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &IND){
+            address++;
+            lo = cpu_read_byte(ctx,address);
+            address++;
+            hi = cpu_read_byte(ctx,address);
+            operand = (hi << 8) | lo;
+            snprintf(formatted_temp,50," ($%04X)",operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &IZX){
+            address++;
+            operand = cpu_read_byte(ctx,address) & 0x00FF;
+            snprintf(formatted_temp,50," ($%02X, X)",0x00FF & operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &IZY){
+            address++;
+            operand = cpu_read_byte(ctx,address) & 0x00FF;
+            snprintf(formatted_temp,50," ($%02X), Y",0x00FF & operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+        else if(current_instruction.addr_mode == &REL){
+            address++;
+            operand = cpu_read_byte(ctx,address) & 0x00FF;
+            snprintf(formatted_temp,50," $%02X  [REL]",0x00FF & operand);
+            strcat(disassembled_instructions[instruction_num], formatted_temp);
+        }
+
+        address++;
+        instruction_num++;
+    }
+
+}

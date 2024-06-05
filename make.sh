@@ -1,0 +1,1 @@
+gcc -g -o emu -lraylib  main.c cpu/cpu.c memory/memory.c 

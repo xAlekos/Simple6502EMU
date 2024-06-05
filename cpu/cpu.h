@@ -100,13 +100,14 @@ static uint8_t TAY(cpu* ctx);    static uint8_t TSX(cpu* ctx);    static uint8_t
 
 void clock(cpu* ctx);
 
-void reset();
-void irq();
-void nmi();
+void reset(cpu* ctx);
+void irq(cpu* ctx);
+void nmi(cpu* ctx);
 
 cpu* cpu_init();
 
 extern instruction_t instrunctions_table[256];
+extern char disassembled_instructions[50][100];
 
 void connect_memory(cpu* ctx,mem* memory);
 
@@ -117,5 +118,7 @@ void cpu_write_byte(cpu* ctx,uint16_t address, uint8_t value);
 void set_flag(cpu* ctx,sr_flag_t flag, bool set_to);
 
 bool get_flag(cpu* ctx, sr_flag_t flag);
+
+void disassemble(cpu* ctx,uint16_t start_address, uint16_t end_address);
 
 #endif

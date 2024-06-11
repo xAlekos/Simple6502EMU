@@ -2,7 +2,7 @@
 
 
 instruction_t instrunctions_table[256] = {
-        {"BRK", &BRK, &IMM, 7}, {"ORA", &ORA, &IZX, 6}, {"???", &XXX, &IMP, 2},
+        {"BRK", &BRK, &IMP, 7}, {"ORA", &ORA, &IZX, 6}, {"???", &XXX, &IMP, 2},
         {"???", &XXX, &IMP, 8}, {"???", &NOP, &IMP, 3}, {"ORA", &ORA, &ZP0, 3},
         {"ASL", &ASL, &ZP0, 5}, {"???", &XXX, &IMP, 5}, {"PHP", &PHP, &IMP, 3},
         {"ORA", &ORA, &IMM, 2}, {"ASL", &ASL, &IMP, 2}, {"???", &XXX, &IMP, 2},
@@ -992,6 +992,8 @@ uint8_t BRK(cpu *ctx){
 
     ctx->sp--;
 
+    ctx->pc = (uint16_t)(cpu_read_byte(ctx,0xFFFF) << 8) | (uint16_t)(cpu_read_byte(ctx,0XFFFE));
+
     return 0;
 }
 
@@ -1031,7 +1033,7 @@ void disassemble(cpu* ctx,uint16_t start_address, uint16_t end_address){
         uint16_t operand;
         char formatted_temp[50];
         if(current_instruction.addr_mode == &IMP){
-
+            strcat(disassembled_instructions[instruction_num], " [IMP]");
         }
         else if(current_instruction.addr_mode == &IMM){
             address++;
@@ -1110,12 +1112,14 @@ void disassemble(cpu* ctx,uint16_t start_address, uint16_t end_address){
         else if(current_instruction.addr_mode == &REL){
             address++;
             operand = cpu_read_byte(ctx,address) & 0x00FF;
-            snprintf(formatted_temp,50," $%02X  [REL]",0x00FF & operand);
+            snprintf(formatted_temp,50," $%02X [REL]",0x00FF & operand);
             strcat(disassembled_instructions[instruction_num], formatted_temp);
         }
+   
 
         address++;
         instruction_num++;
     }
+    
 
 }

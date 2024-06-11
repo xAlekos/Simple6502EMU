@@ -68,10 +68,10 @@ void draw_cycles(cpu* ctx){
 
 }
 
-void draw_disassembled_code(cpu* ctx,uint16_t start_addr , uint16_t end_addr){
-    int ypos = 500;
-    
-    for(int i = 0; i < 50; i++){
+void draw_disassembled_code(cpu* ctx){
+    int ypos = 250;
+    disassemble(ctx,ctx->pc,ctx->pc + 128);
+    for(int i = 0; i < 25; i++){
         DrawText(disassembled_instructions[i],800,ypos,22,WHITE);
         ypos+=22;
     }
@@ -81,21 +81,21 @@ int main(int argc, char** argv){
     cpu* ctx = cpu_init();
     mem* memory = mem_init();
     connect_memory(ctx,memory);
-    uint8_t page = 0x00;
+    uint8_t page = 0x80;
 
     InitWindow(1024,1024,"6502 emu");
-    int rom_size = load_rom_in_memory(ctx->memory,"./roms/r3",0);
-    disassemble(ctx,ctx->pc,rom_size);
+    load_rom_in_memory(ctx->memory,"./roms/nestest.nes",0x8000);
+    load_rom_in_memory(ctx->memory,"./roms/nestest.nes",0xC000);
     SetTargetFPS(300);
     ClearBackground(BLACK);
     reset(ctx);
-
+    ctx->pc = 0x8000;
     while(!WindowShouldClose()){
         ClearBackground(BLACK);
         draw_registers(ctx);
         draw_status_register(ctx);
         draw_memory_page(ctx,page);
-        draw_disassembled_code(ctx,0,16);
+        draw_disassembled_code(ctx);
         draw_cycles(ctx);
         if(IsKeyPressed(KEY_LEFT))
             page--;

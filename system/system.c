@@ -1,12 +1,18 @@
-#include "memory.h"
+#include "system.h"
 
-mem* mem_init(){
+mem* cpu_mem_init(){
     
     mem* new_mem = (mem*)calloc(1,sizeof(mem));
     return new_mem;
 
 }
 
+nes_system* system_init()
+{
+    nes_system* new_system = (nes_system*)calloc(1,sizeof(nes_system));
+    new_system->cpu_ram = cpu_mem_init();
+    return new_system;
+}
 
 uint8_t mem_read_byte(mem* memory, uint16_t address){
 

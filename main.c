@@ -1,4 +1,5 @@
 #include "./cpu/cpu.h"
+#include "./system/system.h"
 #include <raylib.h>
 
 
@@ -79,17 +80,16 @@ void draw_disassembled_code(cpu* ctx){
 
 int main(int argc, char** argv){
     cpu* ctx = cpu_init();
-    mem* memory = mem_init();
-    connect_memory(ctx,memory);
-    uint8_t page = 0x80;
+    nes_system* sys = system_init();
+    connect_system(ctx,sys);
+    uint8_t page = 0x0000;
 
     InitWindow(1024,1024,"6502 emu");
-    load_rom_in_memory(ctx->memory,"./roms/nestest.nes",0x8000);
-    load_rom_in_memory(ctx->memory,"./roms/nestest.nes",0xC000);
     SetTargetFPS(300);
     ClearBackground(BLACK);
     reset(ctx);
-    ctx->pc = 0x8000;
+    load_rom_in_memory(ctx->memory,"./roms/r",0x0000);
+    ctx->pc = 0x0000;
     while(!WindowShouldClose()){
         ClearBackground(BLACK);
         draw_registers(ctx);
@@ -98,9 +98,9 @@ int main(int argc, char** argv){
         draw_disassembled_code(ctx);
         draw_cycles(ctx);
         if(IsKeyPressed(KEY_LEFT))
-            page--;
+            page= max(page - 1,0 );
         if(IsKeyPressed(KEY_RIGHT))
-            page++;
+            page = min(page+1,7);
         if(IsKeyPressed(KEY_SPACE) || ctx->remaining_cycles > 0)
             clock(ctx);
     }

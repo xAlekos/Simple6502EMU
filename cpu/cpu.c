@@ -110,8 +110,11 @@ cpu* cpu_init(){
     return new_cpu;
 }
 
-void connect_memory(cpu* ctx,mem* memory){
-    ctx->memory = memory;
+void connect_system(cpu* ctx,nes_system* sys){
+    
+    ctx->memory=sys->cpu_ram;
+    sys->ctx = ctx;
+
 }
 
 uint8_t cpu_read_byte(cpu* ctx,uint16_t address){

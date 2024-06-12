@@ -2,7 +2,9 @@
     "files.associations": {
         "cpu.h": "c",
         "stdbool.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "memory.h": "c",
+        "utils.h": "c"
     },
     "cmake.configureOnOpen": false
 }

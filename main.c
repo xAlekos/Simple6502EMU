@@ -6,7 +6,7 @@
 void draw_registers(cpu* ctx){
     BeginDrawing();
     DrawText("A:\n\nX:\n\nY:\n\nP:\n\nS:\n\n",850,10,22,WHITE);
-    DrawText(TextFormat("$%X [%d]\n\n$%X [%d]\n\n$%X [%d]\n\n$%X\n\n$%X",ctx->a,ctx->a,ctx->x,ctx->x,ctx->y,ctx->y,ctx->pc,ctx->sp),900,10,22,WHITE);
+    DrawText(TextFormat("$%X [%d]\n\n$%X [%d]\n\n$%X [%d]\n\n$%04X\n\n$%X",ctx->a,ctx->a,ctx->x,ctx->x,ctx->y,ctx->y,ctx->pc,ctx->sp),900,10,22,WHITE);
     DrawText(TextFormat("Rel Addr: %d",ctx->rel_addr),600,100,22,WHITE);
     EndDrawing();
 
@@ -98,9 +98,9 @@ int main(int argc, char** argv){
         draw_disassembled_code(ctx);
         draw_cycles(ctx);
         if(IsKeyPressed(KEY_LEFT))
-            page= max(page - 1,0 );
+            page--;
         if(IsKeyPressed(KEY_RIGHT))
-            page = min(page+1,7);
+            page++;
         if(IsKeyPressed(KEY_SPACE) || ctx->remaining_cycles > 0)
             clock(ctx);
     }

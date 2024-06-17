@@ -15,13 +15,21 @@ nes_system* system_init()
 }
 
 uint8_t mem_read_byte(mem* memory, uint16_t address){
+    
+    if (address >= 0x0000 && address <= 0x1FFF)
+        return memory->bytes[address & 0x07FF];
 
-    return memory->bytes[address];
+    else if(address >= 0x2000 && address <= 0x3FFF)
+        return ppu_read_cpu(address & 0x07FF);
 }
 
 void mem_write_byte(mem* memory, uint16_t address, uint8_t value){
 
-    memory->bytes[address] = value;
+    if (address >= 0x0000 && address <= 0x1FFF)
+        memory->bytes[address & 0x07FF] = value;
+
+    else if(address >= 0x2000 && address <= 0x3FFF)
+        ppu_write_cpu(address & 0x07FF,value);
 
 }
 

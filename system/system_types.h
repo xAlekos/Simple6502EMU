@@ -7,7 +7,7 @@
 struct cpu;
 
 typedef struct cpu_ram {
-    uint8_t bytes[65536];
+    uint8_t bytes[2048];
 } mem;
 
 typedef struct sys {

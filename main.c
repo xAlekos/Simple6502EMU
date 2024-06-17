@@ -52,7 +52,7 @@ void draw_memory_page(cpu* ctx,uint8_t page){
 
 
     for(int i = 0 ; i<256;i++){
-        DrawText(TextFormat("%02X",ctx->memory->bytes[page*256+i]),posx,ypos,22,WHITE);
+        DrawText(TextFormat("%02X",ctx->memory->bytes[(page*256+i) & 0x07FF ]),posx,ypos,22,WHITE);
         posx+=32;
         if((i + 1) % 16 == 0){
             ypos +=32;

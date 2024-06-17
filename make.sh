@@ -1,1 +1,1 @@
-gcc -g -o emu -lraylib  main.c cpu/cpu.c system/system.c 
+gcc -g -o emu -lraylib  main.c cpu/cpu.c system/system.c ppu/ppu.c

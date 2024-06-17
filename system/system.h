@@ -4,6 +4,8 @@
 #include "../utils/utils.h"
 #include "system_types.h" // Inclusione delle definizioni dei tipi System
 #include "../cpu/cpu_types.h" // Inclusione delle definizioni dei tipi CPU
+#include "../ppu/ppu_types.h"
+#include "../ppu/ppu.h"
 
 mem* mem_init();
 nes_system* system_init();

@@ -48,3 +48,9 @@ int load_rom_in_memory(mem* memory,char* path,uint16_t offset){
     fclose(rom);
     return rom_size;
 }
+
+void load_cartridge(nes_system* sys,cartridge* cart){
+    
+    sys->rom = cart;
+    ppu_connect_cartridge(sys->ppu_ctx,cart);
+}

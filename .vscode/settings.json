@@ -4,7 +4,11 @@
         "stdbool.h": "c",
         "string.h": "c",
         "memory.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "ppu_types.h": "c",
+        "cpu_types.h": "c",
+        "system_types.h": "c",
+        "cartridge_types.h": "c"
     },
     "cmake.configureOnOpen": false
 }

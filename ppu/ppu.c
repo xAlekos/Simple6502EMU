@@ -1,6 +1,13 @@
 #include "ppu.h"
 
-uint8_t ppu_read_byte(uint16_t address){
+void ppu_connect_cartridge(ppu* ppu_ctx, cartridge* cart){
+	
+	ppu_ctx->cart = cart;
+	
+}
+
+uint8_t ppu_read_byte(uint16_t address)
+{
 
     return 0x0000;
 }

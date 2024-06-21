@@ -49,7 +49,7 @@ void nmi(cpu* ctx);
 cpu* cpu_init();
 extern instruction_t instructions_table[256];
 extern char disassembled_instructions[0XFFFF][0xFF];
-void connect_system(cpu* ctx, nes_system* sys);
+void cpu_connect_system(cpu* ctx, nes_system* sys);
 uint8_t cpu_read_byte(cpu* ctx, uint16_t address);
 void cpu_write_byte(cpu* ctx, uint16_t address, uint8_t value);
 void set_flag(cpu* ctx, sr_flag_t flag, bool set_to);

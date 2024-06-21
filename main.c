@@ -81,7 +81,7 @@ void draw_disassembled_code(cpu* ctx){
 int main(int argc, char** argv){
     cpu* ctx = cpu_init();
     nes_system* sys = system_init();
-    connect_system(ctx,sys);
+    cpu_connect_system(ctx,sys);
     uint8_t page = 0x0000;
 
     InitWindow(1024,1024,"6502 emu");

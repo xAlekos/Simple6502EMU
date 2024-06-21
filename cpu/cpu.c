@@ -110,7 +110,7 @@ cpu* cpu_init(){
     return new_cpu;
 }
 
-void connect_system(cpu* ctx,nes_system* sys){
+void cpu_connect_system(cpu* ctx,nes_system* sys){
     
     ctx->memory=sys->cpu_ram;
     sys->ctx = ctx;
